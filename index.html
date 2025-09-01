@@ -48,14 +48,22 @@
     .playbtn{display:inline-grid;place-items:center;width:48px;height:48px}
     .playbtn svg{width:14px;height:14px}
 
-    .booking-wrap{margin-top:18px}
-    .booking-btn{padding:10px 0; font-weight:800}
+    .booking-wrap{margin-top:18px;display:flex;gap:16px;flex-wrap:wrap}
+    .booking-btn,.readmore-btn{padding:10px 0; font-weight:800}
+
+    /* READ MORE drawer inside each item */
+    .more{height:0;overflow:hidden;opacity:0;transition:height var(--speed) var(--ease),opacity 220ms var(--ease)}
+    .more.open{opacity:1}
+    .more-inner{padding:16px 0 0;display:grid;gap:12px}
+    .more-inner img{max-width:100%;height:auto;display:block}
+    .video-wrap{position:relative}
+    .video-wrap video{width:100%;height:auto;display:block;background:#000}
 
     .bottom-bar{
       position:fixed;bottom:0;left:0;width:100%;
       display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
       padding:10px var(--edge-d);z-index:60
-    }	
+    }
     .bottom-left{justify-self:start;display:flex;align-items:center}
     .bottom-center{justify-self:center}
     .bottom-right{justify-self:end}
@@ -89,7 +97,7 @@
       :root{ --speed:240ms; }
     }
     @media (prefers-reduced-motion: reduce){
-      .panel,.about{transition:none}
+      .panel,.about,.more{transition:none}
       .summary{transition:none}
     }
   </style>
@@ -109,10 +117,20 @@
               {"src":"audio/ccc/track1.mp3"},
               {"src":"audio/ccc/track2.mp3"},
               {"src":"audio/ccc/track3.mp3"},
-	      {"src":"audio/ccc/track4.mp3"}
+              {"src":"audio/ccc/track4.mp3"}
             ]'></div>
             <div class="booking-wrap">
               <button class="booking-btn" data-book-artist="DJ CCCCCC">BOOK DJ CCCCCC</button>
+              <button class="readmore-btn" data-more-target="#more-ccc">READ MORE</button>
+            </div>
+            <div class="more" id="more-ccc" aria-hidden="true">
+              <div class="more-inner">
+                <p>DJ CCCCCC crafts driving, physical techno for uncompromising rooms.</p>
+                <img src="images/ccc.jpg" alt="DJ CCCCCC" />
+                <div class="video-wrap">
+                  <video src="video/ccc.mp4" controls playsinline muted></video>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -132,6 +150,16 @@
             ]'></div>
             <div class="booking-wrap">
               <button class="booking-btn" data-book-artist="SIMA">BOOK SIMA</button>
+              <button class="readmore-btn" data-more-target="#more-sima">READ MORE</button>
+            </div>
+            <div class="more" id="more-sima" aria-hidden="true">
+              <div class="more-inner">
+                <p>SIMA fuses percussive hypnosis with relentless momentum.</p>
+                <img src="images/sima.jpg" alt="SIMA" />
+                <div class="video-wrap">
+                  <video src="video/sima.mp4" controls playsinline muted></video>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -151,6 +179,16 @@
             ]'></div>
             <div class="booking-wrap">
               <button class="booking-btn" data-book-artist="MARTINA MENFORS">BOOK MARTINA MENFORS</button>
+              <button class="readmore-btn" data-more-target="#more-martina">READ MORE</button>
+            </div>
+            <div class="more" id="more-martina" aria-hidden="true">
+              <div class="more-inner">
+                <p>Martina Menfors sculpts tensile, high–intensity sets for deep endurance spaces.</p>
+                <img src="images/martina.jpg" alt="Martina Menfors" />
+                <div class="video-wrap">
+                  <video src="video/martina.mp4" controls playsinline muted></video>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -215,32 +253,42 @@
     const accordion = document.getElementById('accordion');
     const body = document.body;
 
+    function heightOpen(el){
+      el.style.height = 'auto';
+      const target = el.scrollHeight + 'px';
+      el.style.height = '0px';
+      requestAnimationFrame(()=>{ el.style.height = target; });
+    }
+    function heightClose(el){
+      el.style.height = el.scrollHeight + 'px';
+      requestAnimationFrame(()=>{ el.style.height = '0px'; });
+    }
+
     function openItem(item){
       const panel = item.querySelector('.panel');
-      panel.style.height = panel.scrollHeight + 'px';
+      document.querySelectorAll('.item.open').forEach(closeItem);
+      heightOpen(panel);
       item.classList.add('open');
       panel.setAttribute('aria-hidden','false');
       body.classList.add('single-open');
       const hint = item.querySelector('.hint'); if(hint){ hint.textContent = ICONS.close; }
-      setTimeout(()=>{ panel.style.height = 'auto'; }, parseInt(getComputedStyle(panel).transitionDuration)*1000);
+      const dur = getComputedStyle(panel).transitionDuration.split(',').map(s=>s.trim()).map(s=>{const v=parseFloat(s);return s.endsWith('ms')?v:v*1000;}).reduce((a,b)=>Math.max(a,b),0);
+      setTimeout(()=>{ panel.style.height = 'auto'; }, dur);
     }
     function closeItem(item){
       const panel = item.querySelector('.panel');
-      // set fixed height to current before collapsing
-      panel.style.height = panel.scrollHeight + 'px';
-      requestAnimationFrame(()=>{
-        panel.style.height = '0px';
-      });
+      heightClose(panel);
       item.classList.remove('open');
       panel.setAttribute('aria-hidden','true');
       const hint = item.querySelector('.hint'); if(hint){ hint.textContent = ''; }
     }
+
     accordion.querySelectorAll('.item').forEach(item => {
       const summary = item.querySelector('.summary');
       const hint = item.querySelector('.hint');
       summary.addEventListener('click', () => {
         const isOpen = item.classList.contains('open');
-        accordion.querySelectorAll('.item.open').forEach(closeItem);
+        document.querySelectorAll('.item.open').forEach(closeItem);
         if(!isOpen){ openItem(item); } else { body.classList.remove('single-open'); }
       });
       hint.addEventListener('click', (e)=>{ e.stopPropagation(); closeItem(item); body.classList.remove('single-open'); });
@@ -319,6 +367,27 @@
       window.location.href = `mailto:komutagency@gmail.com?subject=${subject}&body=${body}`;
       modal.classList.remove('open');
       bookingForm.reset();
+    });
+
+    // READ MORE toggles (per artist)
+    document.querySelectorAll('.readmore-btn').forEach(btn=>{
+      const targetSel = btn.getAttribute('data-more-target');
+      const target = document.querySelector(targetSel);
+      if(!target) return;
+      btn.addEventListener('click', ()=>{
+        const isOpen = target.classList.contains('open');
+        if(!isOpen){
+          heightOpen(target);
+          target.classList.add('open');
+          target.setAttribute('aria-hidden','false');
+          const dur = getComputedStyle(target).transitionDuration.split(',').map(s=>s.trim()).map(s=>{const v=parseFloat(s);return s.endsWith('ms')?v:v*1000;}).reduce((a,b)=>Math.max(a,b),0);
+          setTimeout(()=>{ target.style.height = 'auto'; }, dur);
+        } else {
+          heightClose(target);
+          target.classList.remove('open');
+          target.setAttribute('aria-hidden','true');
+        }
+      });
     });
   </script>
 </body>

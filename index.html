@@ -16,7 +16,7 @@
       --ease:cubic-bezier(.2,.8,.2,1);
       --speed:260ms;
     }
-    body{margin:0;background:var(--bg);color:var(--fg);
+    body{margin:0;background:#000;color:#fff;
       font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;
       font-size:10px; text-transform:uppercase; letter-spacing:.02em;
       -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
@@ -51,18 +51,18 @@
     .booking-wrap{margin-top:18px;display:flex;gap:16px;flex-wrap:wrap}
     .booking-btn,.readmore-btn{padding:10px 0; font-weight:800}
 
-    /* READ MORE drawer inside each item */
-    .more{height:0;overflow:hidden;opacity:0;transition:height var(--speed) var(--ease),opacity 220ms var(--ease)}
+    /* READ MORE block exactly 100px below BOOK button */
+    .more{height:0;overflow:hidden;opacity:0;transition:height var(--speed) var(--ease),opacity 220ms var(--ease);margin-top:100px;}
     .more.open{opacity:1}
     .more-inner{padding:16px 0 0;display:grid;gap:12px}
     .more-inner img{max-width:100%;height:auto;display:block}
-    .video-wrap{position:relative}
     .video-wrap video{width:100%;height:auto;display:block;background:#000}
 
+    /* Bottom bar restored exactly */
     .bottom-bar{
       position:fixed;bottom:0;left:0;width:100%;
       display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
-      padding:10px var(--edge-d);z-index:60
+      padding:10px var(--edge-d);z-index:120
     }
     .bottom-left{justify-self:start;display:flex;align-items:center}
     .bottom-center{justify-self:center}
@@ -85,9 +85,9 @@
     .form{display:flex;flex-direction:column;gap:16px}
     .choices{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
     .choice input{position:absolute;opacity:0;pointer-events:none}
-    .choice label{display:inline-block;padding-top:7px; padding-bottom:7px; padding-right: 16px;}
+    .choice label{display:inline-block;padding-top:7px; padding-bottom:7px; padding-right:16px;}
     .choice input:checked + label{outline:1px solid #fff;outline-offset:0;font-weight:800}
-    textarea{width:100%;min-height:140px;background:#0a0a0a;color:var(--fg);border:1px solid #fff;border-radius:0;padding:12px;font-family:inherit;font-size:12px}
+    textarea{width:100%;min-height:140px;background:#0a0a0a;color:#fff;border:1px solid #fff;border-radius:0;padding:12px;font-family:inherit;font-size:12px}
     .send{align-self:flex-start;padding:12px 18px;font-weight:800;margin-top:4px}
 
     @media (max-width:640px){
@@ -106,6 +106,7 @@
   <main>
     <div class="accordion" id="accordion">
 
+      <!-- DJ CCCCCC -->
       <section class="item" data-artist="DJ CCCCCC">
         <button class="summary" aria-expanded="false">
           <span class="label">DJ CCCCCC</span>
@@ -136,6 +137,7 @@
         </div>
       </section>
 
+      <!-- SIMA -->
       <section class="item" data-artist="SIMA">
         <button class="summary" aria-expanded="false">
           <span class="label">SIMA</span>
@@ -165,6 +167,7 @@
         </div>
       </section>
 
+      <!-- MARTINA MENFORS -->
       <section class="item" data-artist="MARTINA MENFORS">
         <button class="summary" aria-expanded="false">
           <span class="label">MARTINA MENFORS</span>
@@ -197,12 +200,14 @@
     </div>
   </main>
 
+  <!-- ABOUT drawer -->
   <aside class="about" id="aboutDrawer" aria-hidden="true">
     <p><strong>Kom Ut Agency</strong> represents producing artists who DJ — Our roster delivers raw, physical techno experiences built for spaces of intensity and endurance.</p>
     <p>Kjellmansgatan 32 · 0739443445</p>
     <p>Contact: komutagency@gmail.com</p>
   </aside>
 
+  <!-- Bottom bar (exactly as before) -->
   <div class="bottom-bar">
     <div class="bottom-left brand">
       <svg viewBox="0 0 300 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -213,6 +218,7 @@
     <button id="aboutBtn" class="chip bottom-right">ABOUT</button>
   </div>
 
+  <!-- Booking modal -->
   <section class="modal" id="modal">
     <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle">
       <div class="dialog-header">
@@ -249,7 +255,7 @@
       close: '×'
     };
 
-    // Accordion behaviour with smooth height transition
+    // Accordion with smooth height
     const accordion = document.getElementById('accordion');
     const body = document.body;
 
@@ -294,7 +300,7 @@
       hint.addEventListener('click', (e)=>{ e.stopPropagation(); closeItem(item); body.classList.remove('single-open'); });
     });
 
-    // Audio player: exclusive, loop, ~-6 dB via element volume, pause/resume
+    // Minimal audio player: exclusive, loop, ~-6 dB via volume, pause/resume
     let currentAudio = null;
     let currentBtn = null;
 
@@ -320,7 +326,7 @@
           btn.innerHTML = ICONS.pause;
           currentAudio = audio; currentBtn = btn;
         } else {
-          audio.pause(); // do not reset currentTime
+          audio.pause(); // do not reset position
           btn.innerHTML = ICONS.play;
           currentAudio = null; currentBtn = null;
         }
@@ -369,7 +375,17 @@
       bookingForm.reset();
     });
 
-    // READ MORE toggles (per artist)
+    // READ MORE toggles
+    function heightOpenLocal(el){
+      el.style.height = 'auto';
+      const target = el.scrollHeight + 'px';
+      el.style.height = '0px';
+      requestAnimationFrame(()=>{ el.style.height = target; });
+    }
+    function heightCloseLocal(el){
+      el.style.height = el.scrollHeight + 'px';
+      requestAnimationFrame(()=>{ el.style.height = '0px'; });
+    }
     document.querySelectorAll('.readmore-btn').forEach(btn=>{
       const targetSel = btn.getAttribute('data-more-target');
       const target = document.querySelector(targetSel);
@@ -377,13 +393,13 @@
       btn.addEventListener('click', ()=>{
         const isOpen = target.classList.contains('open');
         if(!isOpen){
-          heightOpen(target);
+          heightOpenLocal(target);
           target.classList.add('open');
           target.setAttribute('aria-hidden','false');
           const dur = getComputedStyle(target).transitionDuration.split(',').map(s=>s.trim()).map(s=>{const v=parseFloat(s);return s.endsWith('ms')?v:v*1000;}).reduce((a,b)=>Math.max(a,b),0);
           setTimeout(()=>{ target.style.height = 'auto'; }, dur);
         } else {
-          heightClose(target);
+          heightCloseLocal(target);
           target.classList.remove('open');
           target.setAttribute('aria-hidden','true');
         }

@@ -36,8 +36,7 @@
     }
     .summary .label{
       font-weight:800;font-size:10px;
-      margin-right:auto;           /* anchor left */
-      text-align:left;
+      margin-right:auto; text-align:left; /* keep left edge */
     }
     .summary .hint{
       display:inline-block;width:24px;text-align:right;user-select:none
@@ -76,13 +75,11 @@
     .more-inner{
       padding:16px 0 0;
       display:grid;
-      grid-template-columns:1fr 1fr;      /* always 50/50 image/video (even on small screens) */
+      grid-template-columns:1fr 1fr; /* always 50/50 image/video */
       gap:12px;
       align-items:start;
     }
-    .more-inner img{
-      width:100%;height:auto;display:block;object-fit:cover
-    }
+    .more-inner img{width:100%;height:auto;display:block;object-fit:cover}
     .video-wrap{position:relative}
     .video-wrap video{
       width:100%;height:100%;display:block;background:#000;object-fit:cover
@@ -125,7 +122,7 @@
     textarea{width:100%;min-height:140px;background:#0a0a0a;color:#fff;border:1px solid #fff;border-radius:0;padding:12px;font-family:inherit;font-size:10px}
     .send{align-self:flex-start;padding:12px 18px;font-weight:800;margin-top:4px}
 
-    /* Listening banner (TOP-RIGHT) */
+    /* Listening banner (TOP-RIGHT, always visible once selected) */
     .listen-banner{
       position:fixed;top:10px;right:var(--edge-d);z-index:130;
       display:none;gap:8px;align-items:center;letter-spacing:.03em
@@ -244,10 +241,10 @@
     <p>Contact: komutagency@gmail.com</p>
   </aside>
 
-  <!-- Listening banner (TOP-RIGHT, hidden by default) -->
+  <!-- Listening banner (TOP-RIGHT, hidden by default; persists when paused) -->
   <div class="listen-banner" id="listenBanner">
     <span class="label" id="listenLabel">LISTENING TO:</span>
-    <button class="mini-btn" id="listenToggle" aria-label="Toggle play/pause">PAUSE</button>
+    <button class="mini-btn" id="listenToggle" aria-label="Toggle play/pause"></button>
   </div>
 
   <!-- Bottom bar -->
@@ -291,10 +288,15 @@
   </section>
 
   <script>
+    // Icons
+    const ICONS = {
+      play: '<svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><polygon points="6,4 20,12 6,20"/></svg>',
+      pause:'<svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>',
+      close:'×'
+    };
+
     const accordion = document.getElementById('accordion');
     const body = document.body;
-
-    const ICONS = { close: '×' };
 
     function heightOpen(el){
       el.style.height = 'auto';
@@ -339,17 +341,17 @@
       hint.addEventListener('click', (e)=>{ e.stopPropagation(); closeItem(item); body.classList.remove('single-open'); updateListenBanner(); });
     });
 
-    // Minimal audio player: exclusive, loop, ~-6 dB via element volume, pause/resume
+    // Minimal audio player: exclusive, loop, ~-6 dB via volume, pause/resume
     let currentAudio = null;
     let currentBtn = null;
-    let currentArtist = '';
+    let currentArtist = ''; // persists even when paused (so banner stays)
 
     function makeTrackRow(track, artist){
       const row = document.createElement('div');
       row.className = 'track';
       const btn = document.createElement('button');
       btn.className = 'playbtn';
-      btn.textContent = 'PLAY'; // simple text control
+      btn.innerHTML = ICONS.play;
 
       const audio = new Audio(track.src);
       audio.preload = 'auto';
@@ -359,16 +361,17 @@
       btn.addEventListener('click', async () => {
         if (currentAudio && currentAudio !== audio) {
           currentAudio.pause();
-          if (currentBtn) currentBtn.textContent = 'PLAY';
+          if (currentBtn) currentBtn.innerHTML = ICONS.play;
         }
         if (audio.paused) {
           try { await audio.play(); } catch(_) {}
-          btn.textContent = 'PAUSE';
+          btn.innerHTML = ICONS.pause;
           currentAudio = audio; currentBtn = btn; currentArtist = artist;
         } else {
-          audio.pause();
-          btn.textContent = 'PLAY';
-          currentAudio = null; currentBtn = null; currentArtist = '';
+          audio.pause(); // do not clear currentArtist
+          btn.innerHTML = ICONS.play;
+          // keep currentAudio reference so banner toggle works
+          currentAudio = audio; currentBtn = btn;
         }
         updateListenBanner();
       });
@@ -459,30 +462,21 @@
       });
     });
 
-    // Listening banner (TOP-RIGHT) logic
+    // Listening banner (TOP-RIGHT) logic: show once an artist has been selected (even if paused)
     const listenBanner = document.getElementById('listenBanner');
     const listenLabel  = document.getElementById('listenLabel');
     const listenToggle = document.getElementById('listenToggle');
 
-    function getOpenArtist(){
-      const open = document.querySelector('.item.open');
-      return open ? open.dataset.artist || '' : '';
-    }
-
-    function shouldShowBanner(){
-      if (!currentAudio || currentAudio.paused) return false;
-      const openArtist = getOpenArtist();
-      if (!openArtist) return true;            // no panel open → show
-      return openArtist !== currentArtist;     // different panel open → show
-      // same artist open → hide
-    }
-
     function updateListenBanner(){
-      const show = shouldShowBanner();
-      listenBanner.style.display = show ? 'flex' : 'none';
-      if (show){
+      const hasSelection = !!currentArtist;
+      listenBanner.style.display = hasSelection ? 'flex' : 'none';
+      if (hasSelection){
         listenLabel.textContent = `LISTENING TO: ${currentArtist}`;
-        listenToggle.textContent = currentAudio.paused ? 'PLAY' : 'PAUSE';
+        if (currentAudio && !currentAudio.paused){
+          listenToggle.innerHTML = ICONS.pause;
+        } else {
+          listenToggle.innerHTML = ICONS.play;
+        }
       }
     }
 

@@ -16,7 +16,8 @@
       --ease:cubic-bezier(.2,.8,.2,1);
       --speed:260ms;
     }
-    body{margin:0;background:#000;color:#fff;
+    body{
+      margin:0;background:#000;color:#fff;
       font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;
       font-size:10px; text-transform:uppercase; letter-spacing:.02em;
       -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
@@ -29,39 +30,55 @@
     .accordion{width:100%;max-width:var(--max);display:flex;flex-direction:column;gap:12px}
 
     .item{background:#050505}
-    .summary{display:flex;align-items:center;justify-content:space-between;:100%;padding:40px 0;
-      transition:background var(--speed) var(--ease)}
-    .summary .label{font-weight:800;font-size:10px}
+    .summary{
+      display:flex;align-items:center;justify-content:space-between;width:100%;
+      padding:40px 0;transition:background var(--speed) var(--ease)
+    }
+    .summary .label{font-weight:800;font-size:10px;flex:1}
+    .summary .hint{display:inline-block;width:24px;text-align:right}
     .summary:hover{background:#070707}
 
-}
-
     /* Smooth open/close using explicit height transitions + slight opacity */
-    .panel{height:0;overflow:hidden;opacity:0;will-change:height,opacity;transition:height var(--speed) var(--ease),opacity 220ms var(--ease)}
+    .panel{height:0;overflow:hidden;opacity:0;will-change:height,opacity;
+      transition:height var(--speed) var(--ease),opacity 220ms var(--ease)}
     .panel-inner{padding:0 0 var(--edge-d)}
+    .item.open .panel{opacity:1}
 
     body.single-open .item{display:none}
     body.single-open .item.open{display:block}
     .item.open{min-height:60dvh}
-    .item.open .panel{opacity:1}
 
     .tracks{display:flex;flex-direction:column;gap:10px;margin-top:12px}
     .track{display:flex;align-items:center}
-    .playbtn{display:inline-grid;place-items:center;:48px;height:48px}
-    .playbtn svg{:14px;height:14px}
+    .playbtn{display:inline-grid;place-items:center;width:48px;height:48px}
+    .playbtn svg{width:14px;height:14px}
 
-    .booking-wrap{margin-top:18px;display:flex;justify-content:space-between; align-items:center}
-}
-    .booking-btn,.readmore-btn{padding:10px 0; font-weight:bold}
+    .booking-wrap{
+      margin-top:18px;display:flex;justify-content:space-between;align-items:center
+    }
+    .booking-btn,.readmore-btn{padding:10px 0; font-weight:800}
 
-    /* READ MORE block exactly 100px below BOOK button */
-    .more{height:0;overflow:hidden;opacity:0;transition:height var(--speed) var(--ease),opacity 220ms var(--ease);margin-top:100px;}
+    /* READ MORE exactly 100px below BOOK */
+    .more{height:0;overflow:hidden;opacity:0;
+      transition:height var(--speed) var(--ease),opacity 220ms var(--ease);
+      margin-top:100px;}
     .more.open{opacity:1}
-    .more-inner{padding:16px 0 0;display:grid;gap:12px}
-    .more-inner img{width:50%;height:auto;display:block}
-    .video-wrap video{width:50%;height:auto;display:block;background:#000}
+    .more-inner{
+      padding:16px 0 0;
+      display:grid;
+      grid-template-columns:1fr 1fr; /* 50/50 image/video */
+      gap:12px;
+      align-items:start;
+    }
+    .more-inner img{width:100%;height:auto;display:block;object-fit:cover}
+    .video-wrap{position:relative}
+    .video-wrap video{
+      width:100%;height:auto;display:block;background:#000;object-fit:cover
+    }
+    /* hide controls */
+    .video-wrap video::-webkit-media-controls{display:none !important}
 
-    /* Bottom bar restored exactly */
+    /* Bottom bar */
     .bottom-bar{
       position:fixed;bottom:0;left:0;width:100%;
       display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
@@ -70,11 +87,14 @@
     .bottom-left{justify-self:start;display:flex;align-items:center}
     .bottom-center{justify-self:center}
     .bottom-right{justify-self:end}
-    .chip{padding:0px 0}
+    .chip{padding:0}
     .brand svg{width:130px;height:auto;display:block}
 
-    .about{position:fixed;left:0;right:0;bottom:44px;max-height:0;overflow:hidden;background:#050505;
-      transition:max-height var(--speed) var(--ease),opacity 200ms var(--ease);padding:0 var(--edge-d);opacity:0}
+    .about{
+      position:fixed;left:0;right:0;bottom:44px;max-height:0;overflow:hidden;background:#050505;
+      transition:max-height var(--speed) var(--ease),opacity 200ms var(--ease);
+      padding:0 var(--edge-d);opacity:0
+    }
     .about.open{max-height:60dvh;padding:var(--edge-d);opacity:1}
     .about p{margin:0 0 10px 0}
 
@@ -90,7 +110,7 @@
     .choice input{position:absolute;opacity:0;pointer-events:none}
     .choice label{display:inline-block;padding-top:7px; padding-bottom:7px; padding-right:16px;}
     .choice input:checked + label{outline:1px solid #fff;outline-offset:0;font-weight:800}
-    textarea{width:100%;min-height:140px;background:#0a0a0a;color:#fff;border:1px solid #fff;border-radius:0;padding:12px;font-family:inherit;font-size:12px}
+    textarea{width:100%;min-height:140px;background:#0a0a0a;color:#fff;border:1px solid #fff;border-radius:0;padding:12px;font-family:inherit;font-size:10px}
     .send{align-self:flex-start;padding:12px 18px;font-weight:800;margin-top:4px}
 
     @media (max-width:640px){
@@ -98,6 +118,7 @@
       .bottom-bar{padding:10px var(--edge-m)}
       .playbtn{width:40px;height:40px}
       :root{ --speed:240ms; }
+      .more-inner{grid-template-columns:1fr} /* stack image/video on mobile */
     }
     @media (prefers-reduced-motion: reduce){
       .panel,.about,.more{transition:none}
@@ -129,10 +150,9 @@
             </div>
             <div class="more" id="more-ccc" aria-hidden="true">
               <div class="more-inner">
-                <p>DJ CCCCCC crafts driving, physical techno for uncompromising rooms.</p>
-                <img src="s/ccc.jpg" alt="DJ CCCCCC" />
+                <img src="images/ccc.jpg" alt="DJ CCCCCC" />
                 <div class="video-wrap">
-                  <video src="video/ccc.mp4" controls playsinline muted></video>
+                  <video id="vid-ccc" src="video/ccc.mp4" muted loop playsinline></video>
                 </div>
               </div>
             </div>
@@ -159,10 +179,9 @@
             </div>
             <div class="more" id="more-sima" aria-hidden="true">
               <div class="more-inner">
-                <p>SIMA fuses percussive hypnosis with relentless momentum.</p>
-                <img src="s/sima.jpg" alt="SIMA" />
+                <img src="images/sima.jpg" alt="SIMA" />
                 <div class="video-wrap">
-                  <video src="video/sima.mp4" controls playsinline muted></video>
+                  <video id="vid-sima" src="video/sima.mp4" muted loop playsinline></video>
                 </div>
               </div>
             </div>
@@ -189,10 +208,9 @@
             </div>
             <div class="more" id="more-martina" aria-hidden="true">
               <div class="more-inner">
-                <p>Martina Menfors sculpts tensile, high–intensity sets for deep endurance spaces.</p>
-                <img src="s/martina.jpg" alt="Martina Menfors" />
+                <img src="images/martina.jpg" alt="Martina Menfors" />
                 <div class="video-wrap">
-                  <video src="video/martina.mp4" controls playsinline muted></video>
+                  <video id="vid-martina" src="video/martina.mp4" muted loop playsinline></video>
                 </div>
               </div>
             </div>
@@ -210,7 +228,7 @@
     <p>Contact: komutagency@gmail.com</p>
   </aside>
 
-  <!-- Bottom bar (exactly as before) -->
+  <!-- Bottom bar -->
   <div class="bottom-bar">
     <div class="bottom-left brand">
       <svg viewBox="0 0 300 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -378,7 +396,7 @@
       bookingForm.reset();
     });
 
-    // READ MORE toggles
+    // READ MORE toggles + video click play/pause (no controls)
     function heightOpenLocal(el){
       el.style.height = 'auto';
       const target = el.scrollHeight + 'px';
@@ -406,6 +424,14 @@
           target.classList.remove('open');
           target.setAttribute('aria-hidden','true');
         }
+      });
+    });
+
+    // Video click to toggle play/pause (no icons)
+    document.querySelectorAll('.video-wrap video').forEach(v=>{
+      v.addEventListener('click', async ()=>{
+        if (v.paused) { try{ await v.play(); }catch(_){/* ignore */} }
+        else { v.pause(); }
       });
     });
   </script>

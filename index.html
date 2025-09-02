@@ -34,13 +34,21 @@
       display:flex;align-items:center;justify-content:space-between;width:100%;
       padding:40px 0;transition:background var(--speed) var(--ease)
     }
-    .summary .label{font-weight:800;font-size:10px;flex:1}
-    .summary .hint{display:inline-block;width:24px;text-align:right}
+    .summary .label{
+      font-weight:800;font-size:10px;
+      margin-right:auto;           /* anchor left */
+      text-align:left;
+    }
+    .summary .hint{
+      display:inline-block;width:24px;text-align:right;user-select:none
+    }
     .summary:hover{background:#070707}
 
     /* Smooth open/close using explicit height transitions + slight opacity */
-    .panel{height:0;overflow:hidden;opacity:0;will-change:height,opacity;
-      transition:height var(--speed) var(--ease),opacity 220ms var(--ease)}
+    .panel{
+      height:0;overflow:hidden;opacity:0;will-change:height,opacity;
+      transition:height var(--speed) var(--ease),opacity 220ms var(--ease)
+    }
     .panel-inner{padding:0 0 var(--edge-d)}
     .item.open .panel{opacity:1}
 
@@ -59,23 +67,27 @@
     .booking-btn,.readmore-btn{padding:10px 0; font-weight:800}
 
     /* READ MORE exactly 100px below BOOK */
-    .more{height:0;overflow:hidden;opacity:0;
+    .more{
+      height:0;overflow:hidden;opacity:0;
       transition:height var(--speed) var(--ease),opacity 220ms var(--ease);
-      margin-top:100px;}
+      margin-top:100px;
+    }
     .more.open{opacity:1}
     .more-inner{
       padding:16px 0 0;
       display:grid;
-      grid-template-columns:1fr 1fr; /* 50/50 image/video */
+      grid-template-columns:1fr 1fr;      /* always 50/50 image/video (even on small screens) */
       gap:12px;
       align-items:start;
     }
-    .more-inner img{width:100%;height:auto;display:block;object-fit:cover}
+    .more-inner img{
+      width:100%;height:auto;display:block;object-fit:cover
+    }
     .video-wrap{position:relative}
     .video-wrap video{
-      width:100%;height:auto;display:block;background:#000;object-fit:cover
+      width:100%;height:100%;display:block;background:#000;object-fit:cover
     }
-    /* hide controls */
+    /* hide native controls */
     .video-wrap video::-webkit-media-controls{display:none !important}
 
     /* Bottom bar */
@@ -113,13 +125,17 @@
     textarea{width:100%;min-height:140px;background:#0a0a0a;color:#fff;border:1px solid #fff;border-radius:0;padding:12px;font-family:inherit;font-size:10px}
     .send{align-self:flex-start;padding:12px 18px;font-weight:800;margin-top:4px}
 
-    @media (max-width:640px){
-      main{padding:140px var(--edge-m) 120px}
-      .bottom-bar{padding:10px var(--edge-m)}
-      .playbtn{width:40px;height:40px}
-      :root{ --speed:240ms; }
-      .more-inner{grid-template-columns:1fr} /* stack image/video on mobile */
+    /* Listening banner (TOP-RIGHT) */
+    .listen-banner{
+      position:fixed;top:10px;right:var(--edge-d);z-index:130;
+      display:none;gap:8px;align-items:center;letter-spacing:.03em
     }
+    .listen-banner .label{font-weight:400} /* not bold */
+    .listen-banner .mini-btn{
+      font-size:10px;line-height:1;display:inline-grid;place-items:center;
+      width:auto;height:auto;padding:0
+    }
+
     @media (prefers-reduced-motion: reduce){
       .panel,.about,.more{transition:none}
       .summary{transition:none}
@@ -145,7 +161,7 @@
               {"src":"audio/ccc/track4.mp3"}
             ]'></div>
             <div class="booking-wrap">
-              <button class="booking-btn" data-book-artist="DJ CCCCCC">BOOK DJ CCCCCC</button>
+              <button class="booking-btn" data-book-artist="DJ CCCCCC"><strong>BOOK DJ CCCCCC</strong></button>
               <button class="readmore-btn" data-more-target="#more-ccc">READ MORE</button>
             </div>
             <div class="more" id="more-ccc" aria-hidden="true">
@@ -174,7 +190,7 @@
               {"src":"audio/sima/track3.mp3"}
             ]'></div>
             <div class="booking-wrap">
-              <button class="booking-btn" data-book-artist="SIMA">BOOK SIMA</button>
+              <button class="booking-btn" data-book-artist="SIMA"><strong>BOOK SIMA</strong></button>
               <button class="readmore-btn" data-more-target="#more-sima">READ MORE</button>
             </div>
             <div class="more" id="more-sima" aria-hidden="true">
@@ -203,7 +219,7 @@
               {"src":"audio/martina/track3.mp3"}
             ]'></div>
             <div class="booking-wrap">
-              <button class="booking-btn" data-book-artist="MARTINA MENFORS">BOOK MARTINA MENFORS</button>
+              <button class="booking-btn" data-book-artist="MARTINA MENFORS"><strong>BOOK MARTINA MENFORS</strong></button>
               <button class="readmore-btn" data-more-target="#more-martina">READ MORE</button>
             </div>
             <div class="more" id="more-martina" aria-hidden="true">
@@ -227,6 +243,12 @@
     <p>Kjellmansgatan 32 · 0739443445</p>
     <p>Contact: komutagency@gmail.com</p>
   </aside>
+
+  <!-- Listening banner (TOP-RIGHT, hidden by default) -->
+  <div class="listen-banner" id="listenBanner">
+    <span class="label" id="listenLabel">LISTENING TO:</span>
+    <button class="mini-btn" id="listenToggle" aria-label="Toggle play/pause">PAUSE</button>
+  </div>
 
   <!-- Bottom bar -->
   <div class="bottom-bar">
@@ -269,16 +291,10 @@
   </section>
 
   <script>
-    // Icons
-    const ICONS = {
-      play: '<svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><polygon points="6,4 20,12 6,20"/></svg>',
-      pause: '<svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>',
-      close: '×'
-    };
-
-    // Accordion with smooth height
     const accordion = document.getElementById('accordion');
     const body = document.body;
+
+    const ICONS = { close: '×' };
 
     function heightOpen(el){
       el.style.height = 'auto';
@@ -301,6 +317,7 @@
       const hint = item.querySelector('.hint'); if(hint){ hint.textContent = ICONS.close; }
       const dur = getComputedStyle(panel).transitionDuration.split(',').map(s=>s.trim()).map(s=>{const v=parseFloat(s);return s.endsWith('ms')?v:v*1000;}).reduce((a,b)=>Math.max(a,b),0);
       setTimeout(()=>{ panel.style.height = 'auto'; }, dur);
+      updateListenBanner();
     }
     function closeItem(item){
       const panel = item.querySelector('.panel');
@@ -308,6 +325,7 @@
       item.classList.remove('open');
       panel.setAttribute('aria-hidden','true');
       const hint = item.querySelector('.hint'); if(hint){ hint.textContent = ''; }
+      updateListenBanner();
     }
 
     accordion.querySelectorAll('.item').forEach(item => {
@@ -316,21 +334,22 @@
       summary.addEventListener('click', () => {
         const isOpen = item.classList.contains('open');
         document.querySelectorAll('.item.open').forEach(closeItem);
-        if(!isOpen){ openItem(item); } else { body.classList.remove('single-open'); }
+        if(!isOpen){ openItem(item); } else { body.classList.remove('single-open'); updateListenBanner(); }
       });
-      hint.addEventListener('click', (e)=>{ e.stopPropagation(); closeItem(item); body.classList.remove('single-open'); });
+      hint.addEventListener('click', (e)=>{ e.stopPropagation(); closeItem(item); body.classList.remove('single-open'); updateListenBanner(); });
     });
 
-    // Minimal audio player: exclusive, loop, ~-6 dB via volume, pause/resume
+    // Minimal audio player: exclusive, loop, ~-6 dB via element volume, pause/resume
     let currentAudio = null;
     let currentBtn = null;
+    let currentArtist = '';
 
-    function makeTrackRow(track){
+    function makeTrackRow(track, artist){
       const row = document.createElement('div');
       row.className = 'track';
       const btn = document.createElement('button');
       btn.className = 'playbtn';
-      btn.innerHTML = ICONS.play;
+      btn.textContent = 'PLAY'; // simple text control
 
       const audio = new Audio(track.src);
       audio.preload = 'auto';
@@ -340,18 +359,22 @@
       btn.addEventListener('click', async () => {
         if (currentAudio && currentAudio !== audio) {
           currentAudio.pause();
-          if (currentBtn) currentBtn.innerHTML = ICONS.play;
+          if (currentBtn) currentBtn.textContent = 'PLAY';
         }
         if (audio.paused) {
-          await audio.play();
-          btn.innerHTML = ICONS.pause;
-          currentAudio = audio; currentBtn = btn;
+          try { await audio.play(); } catch(_) {}
+          btn.textContent = 'PAUSE';
+          currentAudio = audio; currentBtn = btn; currentArtist = artist;
         } else {
-          audio.pause(); // do not reset position
-          btn.innerHTML = ICONS.play;
-          currentAudio = null; currentBtn = null;
+          audio.pause();
+          btn.textContent = 'PLAY';
+          currentAudio = null; currentBtn = null; currentArtist = '';
         }
+        updateListenBanner();
       });
+
+      audio.addEventListener('pause', updateListenBanner);
+      audio.addEventListener('play',  updateListenBanner);
 
       row.addEventListener('contextmenu', e => e.preventDefault());
       row.appendChild(btn);
@@ -360,7 +383,8 @@
 
     document.querySelectorAll('.tracks').forEach(list => {
       const tracks = JSON.parse(list.getAttribute('data-tracks'));
-      tracks.forEach(t => list.appendChild(makeTrackRow(t)));
+      const artist = list.closest('.item')?.dataset.artist || '';
+      tracks.forEach(t => list.appendChild(makeTrackRow(t, artist)));
     });
 
     // About toggle
@@ -396,7 +420,7 @@
       bookingForm.reset();
     });
 
-    // READ MORE toggles + video click play/pause (no controls)
+    // READ MORE toggles
     function heightOpenLocal(el){
       el.style.height = 'auto';
       const target = el.scrollHeight + 'px';
@@ -427,13 +451,48 @@
       });
     });
 
-    // Video click to toggle play/pause (no icons)
+    // Video click to toggle play/pause (no icons, no controls)
     document.querySelectorAll('.video-wrap video').forEach(v=>{
       v.addEventListener('click', async ()=>{
         if (v.paused) { try{ await v.play(); }catch(_){/* ignore */} }
         else { v.pause(); }
       });
     });
+
+    // Listening banner (TOP-RIGHT) logic
+    const listenBanner = document.getElementById('listenBanner');
+    const listenLabel  = document.getElementById('listenLabel');
+    const listenToggle = document.getElementById('listenToggle');
+
+    function getOpenArtist(){
+      const open = document.querySelector('.item.open');
+      return open ? open.dataset.artist || '' : '';
+    }
+
+    function shouldShowBanner(){
+      if (!currentAudio || currentAudio.paused) return false;
+      const openArtist = getOpenArtist();
+      if (!openArtist) return true;            // no panel open → show
+      return openArtist !== currentArtist;     // different panel open → show
+      // same artist open → hide
+    }
+
+    function updateListenBanner(){
+      const show = shouldShowBanner();
+      listenBanner.style.display = show ? 'flex' : 'none';
+      if (show){
+        listenLabel.textContent = `LISTENING TO: ${currentArtist}`;
+        listenToggle.textContent = currentAudio.paused ? 'PLAY' : 'PAUSE';
+      }
+    }
+
+    listenToggle.addEventListener('click', ()=>{
+      if (!currentAudio) return;
+      if (currentAudio.paused){ currentAudio.play(); }
+      else { currentAudio.pause(); }
+      updateListenBanner();
+    });
+
   </script>
 </body>
 </html>
